@@ -1,25 +1,21 @@
 package jee
 
 import (
-	"fmt"
 	"net/http"
 )
 
-const gap = "_"
-
-type HandlerFunc func(http.ResponseWriter, *http.Request)
+type HandlerFunc func(c *Context)
 
 type Engnie struct {
-	router map[string]HandlerFunc
+	router *router
 }
 
 func New() *Engnie {
-	return &Engnie{router: make(map[string]HandlerFunc)}
+	return &Engnie{router: newRouter()}
 }
 
 func (e *Engnie) addRouter(method, palette string, handler HandlerFunc) {
-	key := method + gap + palette
-	e.router[key] = handler
+	e.router.addRouter(method, palette, handler)
 }
 
 func (e *Engnie) GET(palette string, handler HandlerFunc) {
@@ -35,11 +31,6 @@ func (e *Engnie) Run(addr string) error {
 }
 
 func (e *Engnie) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	key := req.Method + gap + req.URL.Path
-	if handler, ok := e.router[key]; ok {
-		handler(rw, req)
-	} else {
-		rw.WriteHeader(http.StatusNotFound)
-		fmt.Fprintf(rw, "404 NOT FOUND: %s\n", req.URL)
-	}
+	c := newContext(rw, req)
+	e.router.handler(c)
 }
