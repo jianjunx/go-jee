@@ -8,7 +8,7 @@ type router struct {
 	// 路由处理函数的集合，key是Method + _ + Path,
 	handlers map[string]HandlerFunc
 }
-
+  
 // 创建路由实例的包装
 func newRouter() *router {
 	return &router{map[string]HandlerFunc{}}
